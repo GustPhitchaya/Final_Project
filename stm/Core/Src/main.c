@@ -149,15 +149,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		 counter++;
 	  } else if (htim == &htim11) {
       if (state == 1) {
-        if (counter <= 60) {
+        if (counter <= 30) {
           HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
           htim11.Instance->CNT = 0;
-        } else if (counter <= 105) {
-          HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-          htim11.Instance->CNT = 6670;
-        } else if (counter <= 120) {
+        } else if (counter <= 50) {
           HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
           htim11.Instance->CNT = 8000;
+        } else if (counter <= 60) {
+          HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+          htim11.Instance->CNT = 9000;
         } else {
           resetstate();
         }
@@ -329,7 +329,7 @@ int main(void)
 	  } else if (state == 1) {
 		    updatevalue();
 	  } else if (state == 2){
-			if (counter <= 120) {
+			if (counter <= 60) {
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 				updatevalue();
 			} else {
