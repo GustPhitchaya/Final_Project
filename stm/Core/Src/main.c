@@ -38,7 +38,7 @@
 /**
 * IIC
 **/
-#define IIC_Addr					    0x73<<1
+#define IIC_Addr	0x73<<1
 
 /**
  * delay x ms
@@ -83,11 +83,10 @@ static void MX_TIM11_Init(void);
 
 
 unsigned char i;
-	unsigned short  Gesture_Data;
+unsigned short Gesture_Data;
 UWORD IIC_Addr_t = IIC_Addr;
 
-void DEV_Set_I2CAddress(UBYTE add_)
-{
+void DEV_Set_I2CAddress(UBYTE add_) {
 	IIC_Addr_t = add_;
 }
 
@@ -95,38 +94,33 @@ void DEV_Set_I2CAddress(UBYTE add_)
 function:
 	I2C Write and Read
 ******************************************************************************/
-void DEV_I2C_WriteByte(UBYTE add_, UBYTE data_)
-{
-	UBYTE Buf[1] = {0};
-	Buf[0] = data_;
-	HAL_I2C_Mem_Write(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 1, 0x10);
+void DEV_I2C_WriteByte(UBYTE add_, UBYTE data_) {
+  UBYTE Buf[1] = {0};
+  Buf[0] = data_;
+  HAL_I2C_Mem_Write(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 1, 0x10);
 }
 
-void DEV_I2C_WriteWord(UBYTE add_, UWORD data_)
-{
-	UBYTE Buf[2] = {0};
-	Buf[0] = data_ >> 8;
-	Buf[1] = data_;
-	HAL_I2C_Mem_Write(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 2, 0x10);
+void DEV_I2C_WriteWord(UBYTE add_, UWORD data_) {
+  UBYTE Buf[2] = {0};
+  Buf[0] = data_ >> 8;
+  Buf[1] = data_;
+  HAL_I2C_Mem_Write(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 2, 0x10);
 }
 
-UBYTE DEV_I2C_ReadByte(UBYTE add_)
-{
-	UBYTE Buf[1]={add_};
-	HAL_I2C_Mem_Read(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 1, 0x10);
-	return Buf[0];
+UBYTE DEV_I2C_ReadByte(UBYTE add_) {
+  UBYTE Buf[1] = {add_};
+  HAL_I2C_Mem_Read(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 1, 0x10);
+  return Buf[0];
 }
 
-UWORD DEV_I2C_ReadWord(UBYTE add_)
-{
-    UBYTE Buf[2]={0, 0};
-		HAL_I2C_Mem_Read(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 2, 0x10);
-    return ((Buf[1] << 8) | (Buf[0] & 0xff));
+UWORD DEV_I2C_ReadWord(UBYTE add_) {
+  UBYTE Buf[2] = {0, 0};
+  HAL_I2C_Mem_Read(&hi2c1, IIC_Addr_t, add_, I2C_MEMADD_SIZE_8BIT, Buf, 2, 0x10);
+  return ((Buf[1] << 8) | (Buf[0] & 0xff));
 }
 
 
-unsigned char PAJ7620U2_init()
-{
+unsigned char PAJ7620U2_init() {
 	unsigned char i,State;
 	DEV_Set_I2CAddress(PAJ7620U2_I2C_ADDRESS);
 	DEV_Delay_ms(5);
@@ -134,8 +128,7 @@ unsigned char PAJ7620U2_init()
 	if (State != 0x20)
 		return 0;																						//Wake up failed
 	DEV_I2C_WriteByte(PAJ_BANK_SELECT, 0);								//Select Bank 0
-	for (i=0;i< Init_Array;i++)
-	{
+	for (i=0;i< Init_Array;i++) {
 		 DEV_I2C_WriteByte(Init_Register_Array[i][0], Init_Register_Array[i][1]);//Power up initialize
 	}
 	return 1;
@@ -143,57 +136,50 @@ unsigned char PAJ7620U2_init()
 char statearr[15];
 char gesturearr[16];
 char valuearr[16];
-int value[4]= {0,0,0,0};
-int digit[4]={1000,100,10,1};
+int value[4] = {0,0,0,0};
+int digit[4] = {1000,100,10,1};
 int idx=3;
-
 int state=0;
 int counter=0;
 char sentbuffer[7];
 char recievebuffer[3];
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	 if(htim==&htim10){
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	 if (htim ==& htim10) {
 		 counter++;
-	  }else if(htim==&htim11){
-		  	 if(state==1){
-		  		if(counter<=60){
-		  			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-		  			htim11.Instance->CNT=0;
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-		  	    }else if (counter<=105){
-		  	    	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-		  	    	htim11.Instance->CNT=6670;
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-		  	    }else if(counter<=120){
-		  	    	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
-		  	    	htim11.Instance->CNT=8000;
-//		  	    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-//		  			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
-		  	    }else{
-		  			resetstate();
-		  	    }
-		  	 }
+	  } else if (htim == &htim11) {
+      if (state == 1) {
+        if (counter <= 60) {
+          HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+          htim11.Instance->CNT = 0;
+        } else if (counter <= 105) {
+          HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+          htim11.Instance->CNT = 6670;
+        } else if (counter <= 120) {
+          HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+          htim11.Instance->CNT = 8000;
+        } else {
+          resetstate();
+        }
+      }
 	  }
 }
-void resetstate(){
+
+void resetstate() {
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
 	memset(value,0,sizeof(value));
-	counter=0;
-	state=0;
-	idx=3;
+	counter = 0;
+	state = 0;
+	idx = 3;
 }
-void check_password(){
-	if(state==1){
+
+void check_password() {
+	if (state == 1) {
 		sprintf(sentbuffer,"2%d%d%d%d%d\n",idx,value[0],value[1],value[2],value[3]);
 		HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
-		while(HAL_UART_Receive(&huart1, recievebuffer, sizeof(recievebuffer), HAL_MAX_DELAY)!=HAL_OK){
+		while (HAL_UART_Receive(&huart1, recievebuffer, sizeof(recievebuffer), HAL_MAX_DELAY)!=HAL_OK) {
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
@@ -202,16 +188,16 @@ void check_password(){
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-		if(recievebuffer[0]=='1'||recievebuffer[1]=='1'||recievebuffer[2]=='1'){
+		if (recievebuffer[0] == '1' || recievebuffer[1] == '1' || recievebuffer[2] == '1') {
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
-			state=2;
-		}else{
+			state = 2;
+		} else {
 			resetstate();
 		}
 		memset(value,0,sizeof(value));
-		counter=0;
-		idx=3;
-	}else if(state==2){
+		counter = 0;
+		idx = 3;
+	} else if (state == 2) {
 		sprintf(sentbuffer,"3%d%d%d%d%d\n",idx,value[0],value[1],value[2],value[3]);
 		HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
 		resetstate();
@@ -220,32 +206,40 @@ void check_password(){
 }
 void updatevalue(){
 	Gesture_Data = DEV_I2C_ReadWord(PAJ_INT_FLAG1);
-	if (Gesture_Data){
-		switch (Gesture_Data){
+	if (Gesture_Data) {
+		switch (Gesture_Data) {
 			case PAJ_UP:
 				sprintf(gesturearr,"Up\r\n");
-				value[idx]=(value[idx]+1)%10;
+				value[idx] = (value[idx] + 1) % 10;
 				break;
 			case PAJ_DOWN:
 				sprintf(gesturearr,"Down\r\n");
-				value[idx]=(value[idx]+10-1)%10;
+				value[idx] = (value[idx] + 10 - 1) % 10;
 				break;
 			case PAJ_LEFT:
 				sprintf(gesturearr,"Left\r\n");
-				idx=(idx+4-1)%4;
+				idx = (idx + 4 - 1) % 4;
 				break;
 			case PAJ_RIGHT:
 				sprintf(gesturearr,"Right\r\n");
-				idx=(idx+1)%4;
+				idx = (idx + 1) % 4;
 				break;
-			case PAJ_FORWARD:						sprintf(gesturearr,"Forward\r\n");			break;
-			case PAJ_BACKWARD:						sprintf(gesturearr,"Backward\r\n"); 		break;
-			case PAJ_CLOCKWISE:						sprintf(gesturearr,"Clockwise\r\n"); 		break;
+			case PAJ_FORWARD:						
+        sprintf(gesturearr,"Forward\r\n");
+        break;
+			case PAJ_BACKWARD:		
+      	sprintf(gesturearr,"Backward\r\n"); 
+        break;
+			case PAJ_CLOCKWISE:						
+        sprintf(gesturearr,"Clockwise\r\n"); 
+        break;
 			case PAJ_COUNT_CLOCKWISE:
 				sprintf(gesturearr,"AntiClockwise\r\n");
 				check_password();
 				break;
-			case PAJ_WAVE:							sprintf(gesturearr,"Wave\r\n"); 			break;
+			case PAJ_WAVE:							
+        sprintf(gesturearr,"Wave\r\n"); 	
+      	break;
 			default: break;
 		}
 		HAL_UART_Transmit(&huart2, gesturearr, sizeof(gesturearr), 50);
@@ -253,7 +247,7 @@ void updatevalue(){
 		HAL_UART_Transmit(&huart2, sentbuffer, sizeof(sentbuffer), 100);
 		HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
 		memset(gesturearr,0,15);
-		Gesture_Data=0;
+		Gesture_Data = 0;
 		DEV_Delay_ms(1000);
 	}
 }
@@ -295,14 +289,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim10);
   HAL_TIM_Base_Start_IT(&htim11);
-	if(!PAJ7620U2_init())
-	{	printf("\nGesture Sensor Error\r\n");
+	if(!PAJ7620U2_init()){
+    printf("\nGesture Sensor Error\r\n");
 		return 0;
 	}
-		printf("\nGesture Sensor OK\r\n");
+	printf("\nGesture Sensor OK\r\n");
 	DEV_I2C_WriteByte(PAJ_BANK_SELECT, 0);																	//Select Bank 0
-	for (i = 0; i < Gesture_Array_SIZE; i++)
-	{
+	for (i = 0; i < Gesture_Array_SIZE; i++) {
 		DEV_I2C_WriteByte(Init_Gesture_Array[i][0], Init_Gesture_Array[i][1]);//Gesture register initializes
 	}
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
@@ -311,39 +304,38 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  if(state==0){
+  while (1) {
+	  if (state == 0) {
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-		  if( HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9)== GPIO_PIN_SET){
-			 sprintf(statearr,"ok\r\n");
-			 sprintf(sentbuffer,"130000\n");
-			 HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
-			 HAL_UART_Transmit(&huart2, statearr, sizeof(statearr), 50);
-			 //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-			 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-			 state=1;
-			 counter=0;
-		 }else{
-			 sprintf(statearr,"off\r\n");
-			 sprintf(sentbuffer,"430000\n");
-			 HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
-			 HAL_UART_Transmit(&huart2, statearr, sizeof(statearr), 50);
-			//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-		 }
+		  if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9) == GPIO_PIN_SET) {
+        sprintf(statearr,"ok\r\n");
+        sprintf(sentbuffer,"130000\n");
+        HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
+        HAL_UART_Transmit(&huart2, statearr, sizeof(statearr), 50);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+        state = 1;
+        counter = 0;
+		  } else {
+        sprintf(statearr,"off\r\n");
+        sprintf(sentbuffer,"430000\n");
+        HAL_UART_Transmit(&huart1, sentbuffer, sizeof(sentbuffer), 100);
+        HAL_UART_Transmit(&huart2, statearr, sizeof(statearr), 50);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+		  }
 		  HAL_Delay(500);
-	  }else if(state==1){
-		  	 updatevalue();
-	  }else if (state==2){
-			if(counter<=120){
+	  } else if (state == 1) {
+		    updatevalue();
+	  } else if (state == 2){
+			if (counter <= 120) {
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 				updatevalue();
-			}else{
+			} else {
 				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-				state=0;
-				counter=0;
+				state = 0;
+				counter = 0;
 			}
 	 }
 
