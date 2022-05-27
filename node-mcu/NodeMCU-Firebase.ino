@@ -38,7 +38,7 @@ String databasePath;
 // Database child nodes
 
 String timePath = "/timestamp";
-String enteredPinPath = "/entered pin";
+String enteredPinPath = "/entered_pin";
 // Parent Node (to be updated in every loop)
 String parentPath;
 String passwordPath = "/UsersData";
